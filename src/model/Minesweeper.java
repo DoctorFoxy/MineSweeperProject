@@ -33,7 +33,11 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public void startNewGame(Difficulty level) {
-
+        switch (level) {
+            case EASY -> this.startNewGame(8,8,10);
+            case MEDIUM -> this.startNewGame(16,16,40);
+            case HARD -> this.startNewGame(16,30,99);
+        }
     }
 
     @Override
@@ -93,11 +97,9 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public AbstractTile getTile(int x, int y) {
-
-        if (x < col && x > -1 && y < row && y > -1) {
+        if (x < col && x >= 0 && y < row && y >= 0) {
             return world[y][x];
         }
-
 
         return null;
     }
@@ -118,38 +120,28 @@ public class Minesweeper extends AbstractMineSweeper {
         }
 
         if (tempTile.isExplosive()) {
-            this.viewNotifier.notifyExploded(x,y);
+            for (int tempX = 0; tempX < col; tempX++) {
+                for (int tempY = 0; tempY < row; tempY++) {
+                    if (getTile(tempX, tempY).isExplosive()) {
+                        this.viewNotifier.notifyExploded(tempX, tempY);
+                    }
+                }
+
+            }
+
             this.viewNotifier.notifyGameLost();
         }
-
     }
 
     public int explosiveNeighbourCount(int x, int y) {
         int amount = 0;
 
-        if (getTile(x-1,y-1) != null && getTile(x-1,y-1).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x-1,y) != null && getTile(x-1,y).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x-1,y+1) != null && getTile(x-1,y+1).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x,y-1) != null && getTile(x,y-1).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x,y+1) != null && getTile(x,y+1).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x+1,y-1) != null && getTile(x+1,y-1).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x+1,y) != null && getTile(x+1,y).isExplosive()) {
-            amount++;
-        }
-        if (getTile(x+1,y+1) != null && getTile(x+1,y+1).isExplosive()) {
-            amount++;
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1; j <= 1; j++) {
+                if(getTile(x + i, y + j) != null && getTile(x + i, y + j).isExplosive()) {
+                    amount++;
+                }
+            }
         }
 
         return amount;
@@ -161,8 +153,10 @@ public class Minesweeper extends AbstractMineSweeper {
         if (tempTile != null) {
             getTile(x, y).flag();
 
+            this.flagCount++;
             this.viewNotifier.notifyFlagged(x,y);
         }
+        this.viewNotifier.notifyFlagCountChanged(flagCount);
     }
 
     @Override
@@ -171,7 +165,10 @@ public class Minesweeper extends AbstractMineSweeper {
         if (tempTile != null) {
             getTile(x, y).unflag();
             this.viewNotifier.notifyUnflagged(x,y);
+            this.flagCount--;
         }
+
+        this.viewNotifier.notifyFlagCountChanged(flagCount);
     }
 
     @Override

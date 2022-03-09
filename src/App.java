@@ -11,9 +11,7 @@ public class App {
         PlayableMinesweeper model = new Minesweeper();
         MinesweeperView mainView = new MinesweeperView(model);
 
-        model.setGameStateNotifier(mainView);
-
-        model.startNewGame(8,8,5);
+        model.startNewGame(10,8,5);
 
         Scanner in = new Scanner(System.in);
         String s = in.nextLine();
