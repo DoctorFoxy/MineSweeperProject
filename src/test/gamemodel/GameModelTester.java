@@ -8,11 +8,12 @@ import static org.junit.Assert.assertTrue;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import model.AbstractTile;
-//import model.Minesweeper;
+import model.Minesweeper;
 import notifier.IGameStateNotifier;
 import notifier.ITileStateNotifier;
 import test.TestableMinesweeper;
@@ -25,7 +26,7 @@ public class GameModelTester {
     @Before
     public void init() {
         //uncomment the line below once your game model code is ready for testing
-        //gameModel = new Minesweeper();
+        gameModel = new Minesweeper();
     }
 
     @Test
@@ -81,7 +82,8 @@ public class GameModelTester {
                     try {
                         TestableTile temp = gameModel.getTile(j, i);
                         if (temp == null) throw new Exception();
-                    }catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         e.printStackTrace();
                         return;
                     }
@@ -109,10 +111,12 @@ public class GameModelTester {
     public void testInjectingTiles() {
         int row=3, col=4;
         AbstractTile world[][] = new AbstractTile[row][col];
-        for (int i=0; i<row; ++i)
-            for (int j=0; j<col; ++j)
-                world[i][j] = ((i+j)%2 == 0)? gameModel.generateEmptyTile() : gameModel.generateExplosiveTile();
-        
+        for (int i=0; i<row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                world[i][j] = ((i + j) % 2 == 0) ? gameModel.generateEmptyTile() : gameModel.generateExplosiveTile();
+            }
+        }
+
 
         gameModel.setGameStateNotifier(new MockGameStateNotifier(){
             @Override
