@@ -61,14 +61,14 @@ public class Minesweeper extends AbstractMineSweeper {
         for (int bombIndex = 0 ; bombIndex < explosionCount ; bombIndex++) {
             boolean bombSet = false;
             while (!bombSet) {
-                random.nextInt(row);
-                random.nextInt(col);
+                int randomRow = random.nextInt(row);
+                int randomCol = random.nextInt(col);
 
                 for (int x = 0 ; x < col ; x++) {
                     for (int y = 0; y < row; y++) {
                         if (!this.getTile(x, y).isExplosive()) {
                             bombSet = true;
-                            this.getTile(x, y).setExplosive(true);
+                            this.getTile(randomCol, randomRow).setExplosive(true);
                             break;
                         }
                     }
