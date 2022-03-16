@@ -4,15 +4,7 @@ import model.Difficulty;
 import model.PlayableMinesweeper;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.plaf.DimensionUIResource;
 
 import java.awt.event.MouseAdapter;
@@ -45,8 +37,11 @@ public class MinesweeperView implements IGameStateNotifier {
     private JPanel world = new JPanel();
     private JPanel timerPanel = new JPanel();
     private JPanel flagPanel = new JPanel();
+    private JPanel bombPanel = new JPanel();
     private JLabel timerView = new JLabel();
     private JLabel flagCountView = new JLabel();
+    private JLabel bombCountView = new JLabel();
+    private JOptionPane winLosePane = new JOptionPane();
 
     public MinesweeperView() {
         this.window = new JFrame("Minesweeper");
@@ -98,6 +93,17 @@ public class MinesweeperView implements IGameStateNotifier {
             System.out.println("Unable to locate flag resource");
         }
 
+        bombPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        try {
+            JLabel clockIcon = new JLabel(new ImageIcon(ImageIO.read(new File(AssetPath.BOMB_ICON))));
+            clockIcon.setSize(new DimensionUIResource(10, 10));
+            bombPanel.add(clockIcon);
+            bombPanel.add(new JLabel("BOMB: "));
+            bombPanel.add(this.bombCountView);
+        } catch (IOException e) {
+            System.out.println("Unable to locate bomb resource");
+        }
+
         this.window.setLayout(new GridBagLayout());
         GridBagConstraints layoutConstraints = new GridBagConstraints();
         layoutConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
@@ -108,6 +114,9 @@ public class MinesweeperView implements IGameStateNotifier {
         layoutConstraints.gridx = 1;
         layoutConstraints.gridy = 0;
         this.window.add(flagPanel, layoutConstraints);
+        //layoutConstraints.gridx = 2;
+        //layoutConstraints.gridy = 0;
+        //this.window.add(bombPanel, layoutConstraints);
         layoutConstraints.fill = GridBagConstraints.BOTH;
         layoutConstraints.gridx = 0;
         layoutConstraints.gridy = 1;
@@ -115,7 +124,7 @@ public class MinesweeperView implements IGameStateNotifier {
         layoutConstraints.weightx = 1.0;
         layoutConstraints.weighty = 1.0;
         this.window.add(world, layoutConstraints);
-        this.window.setSize(500, 10);
+        this.window.setSize(800, 10);
         this.window.setVisible(true);
         this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   
         try {
@@ -180,13 +189,15 @@ public class MinesweeperView implements IGameStateNotifier {
     }
     @Override
     public void notifyGameLost() {
+        winLosePane.showMessageDialog(flagPanel, "You LOST :(");
         this.removeAllTileEvents();
         //throw new UnsupportedOperationException();
     }
     @Override
     public void notifyGameWon() {
+        winLosePane.showMessageDialog(flagPanel, "You WON!");
         this.removeAllTileEvents();
-        throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
     }
 
     private void removeAllTileEvents() {
@@ -198,6 +209,11 @@ public class MinesweeperView implements IGameStateNotifier {
     @Override
     public void notifyFlagCountChanged(int newFlagCount) {
         this.flagCountView.setText(Integer.toString(newFlagCount));
+    }
+
+    @Override
+    public void notifyBombCountChanged(int newBombCount) {
+        this.bombCountView.setText(Integer.toString(newBombCount));
     }
 
     @Override
