@@ -4,12 +4,15 @@ import notifier.IGameStateNotifier;
 import view.MinesweeperView;
 import view.TileView;
 
-import javax.xml.datatype.Duration;
 import java.sql.Time;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.time.LocalDateTime;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Minesweeper extends AbstractMineSweeper {
     private int row;
@@ -18,12 +21,16 @@ public class Minesweeper extends AbstractMineSweeper {
     private AbstractTile[][] world;
     private int flagCount;
     private TileView tileView;
+    private boolean firstTileRule;
 
     private boolean firstOpen;
+
+    private int elapsedTime;
 
     public Minesweeper() {
         flagCount = 0;
         firstOpen = true;
+        firstTileRule = true;
     }
 
     @Override
@@ -55,9 +62,13 @@ public class Minesweeper extends AbstractMineSweeper {
 
         world = new Tile[row][col];
 
+        elapsedTime = 0;
+        Timer elapsed = new Timer();
+        elapsed.scheduleAtFixedRate(updateElapsedTime,0,1000);
+
         for (int colIndex = 0 ; colIndex < col ; colIndex++) {
             for (int rowIndex = 0 ; rowIndex < row ; rowIndex++) {
-                world[rowIndex][colIndex] = new Tile(false);
+                world[rowIndex][colIndex] = new EmptyTile();
             }
         }
 
@@ -68,6 +79,15 @@ public class Minesweeper extends AbstractMineSweeper {
 
         this.viewNotifier.notifyNewGame(row, col);
     }
+
+    TimerTask updateElapsedTime = new TimerTask() {
+        @Override
+        public void run() {
+            viewNotifier.notifyTimeElapsedChanged(Duration.of(elapsedTime, ChronoUnit.SECONDS));
+            elapsedTime++;
+        }
+    };
+
 
     @Override
     public void toggleFlag(int x, int y) {
@@ -99,45 +119,43 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public void open(int x, int y) {
-        AbstractTile tempTile = getTile(x, y);
-
-        if (tempTile != null && tempTile.isFlagged() == false) {
-            if (tempTile.isExplosive() && firstOpen) {
-                firstOpen = false;
-                tempTile.setExplosive(false);
-                newExplosive(x, y);
-                open(x, y);
-            }
-            else if (tempTile.isExplosive()) { //If tile is explosive, notify the view
-                firstOpen = false;
-
-                for (int tempX = 0; tempX < col; tempX++) {
-                    for (int tempY = 0; tempY < row; tempY++) {
-                        if (getTile(tempX, tempY).isExplosive()) {
-                            this.viewNotifier.notifyExploded(tempX, tempY);
-                        }
-                    }
-
+        AbstractTile toOpen = getTile(x, y);
+        if (toOpen != null) {
+            if (toOpen.isExplosive()) {  // EXPLOSIVE
+                if (firstOpen && firstTileRule) { // FIRST OPEN NEVER BOMB
+                    firstOpen = false;
+                    makeEmpty(x,y);
+                    newExplosive(x,y);
+                    open(x,y);
                 }
+                else {
+                    firstOpen = false;
+                    for (int tempX = 0; tempX < col; tempX++) {
+                        for (int tempY = 0; tempY < row; tempY++) {
+                            if (getTile(tempX, tempY).isExplosive()) {
+                                this.viewNotifier.notifyExploded(tempX, tempY);
+                            }
+                        }
 
-                this.viewNotifier.notifyGameLost();
-            }
-
-            else { //If tile has explosive neighbours just open and nothing else
+                    }
+                    this.viewNotifier.notifyGameLost();
+                }
+            } // NON EXPLOSIVE
+            else {
                 firstOpen = false;
 
                 if (explosiveNeighbourCount(x,y) > 0) {
-                    tempTile.open();
+                    toOpen.open();
                     this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
                 }
                 else { //If tile has no explosive neighbours, open all tiles around it
-                    tempTile.open();
+                    toOpen.open();
                     this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
 
                     for(int i = -1; i <= 1; i++) {
                         for(int j = -1; j <= 1; j++) {
                             AbstractTile checkTile = getTile(x + i, y + j);
-                            if(checkTile != null && checkTile.isOpened() == false) {
+                            if(checkTile != null && !checkTile.isOpened()) {
                                 open(x + i, y + j);
                             }
                         }
@@ -158,9 +176,20 @@ public class Minesweeper extends AbstractMineSweeper {
 
             if (!this.getTile(randomCol, randomRow).isExplosive() && randomCol != notX && randomRow != notY) {
                 bombSet = true;
-                this.getTile(randomCol, randomRow).setExplosive(true);
-                break;
+                makeExplosive(randomCol, randomRow);
             }
+        }
+    }
+
+    public void makeExplosive(int x, int y) {
+        if (x < col && x >= 0 && y < row && y >= 0) {
+            world[y][x] = new ExplosiveTile();
+        }
+    }
+
+    public void makeEmpty(int x, int y) {
+        if (x < col && x >= 0 && y < row && y >= 0) {
+            world[y][x] = new EmptyTile();
         }
     }
 
@@ -204,16 +233,16 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public void deactivateFirstTileRule() {
-
+        firstTileRule = false;
     }
 
     @Override
     public AbstractTile generateEmptyTile() {
-        return new Tile(false);
+        return new EmptyTile();
     }
 
     @Override
     public AbstractTile generateExplosiveTile() {
-        return new Tile(true);
+        return new ExplosiveTile();
     }
 }
