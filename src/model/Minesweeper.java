@@ -4,7 +4,9 @@ import notifier.IGameStateNotifier;
 import view.MinesweeperView;
 import view.TileView;
 
+import javax.xml.datatype.Duration;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Random;
 import java.time.LocalDateTime;
@@ -17,8 +19,11 @@ public class Minesweeper extends AbstractMineSweeper {
     private int flagCount;
     private TileView tileView;
 
+    private boolean firstOpen;
+
     public Minesweeper() {
         flagCount = 0;
+        firstOpen = true;
     }
 
     @Override
@@ -43,6 +48,7 @@ public class Minesweeper extends AbstractMineSweeper {
     @Override
     public void startNewGame(int row, int col, int explosionCount) {
         System.out.println("Starting Game...");
+        this.firstOpen = true;
         this.row = row;
         this.col = col;
         this.explosionCount = explosionCount;
@@ -55,29 +61,8 @@ public class Minesweeper extends AbstractMineSweeper {
             }
         }
 
-        Random random = new Random();
-        random.setSeed(java.time.LocalTime.now().getNano());
-
         for (int bombIndex = 0 ; bombIndex < explosionCount ; bombIndex++) {
-            boolean bombSet = false;
-            while (!bombSet) {
-                int randomRow = random.nextInt(row);
-                int randomCol = random.nextInt(col);
-
-                for (int x = 0 ; x < col ; x++) {
-                    for (int y = 0; y < row; y++) {
-                        if (!this.getTile(x, y).isExplosive()) {
-                            bombSet = true;
-                            this.getTile(randomCol, randomRow).setExplosive(true);
-                            break;
-                        }
-                    }
-
-                    if (bombSet) {
-                        break;
-                    }
-                }
-            }
+            newExplosive(-1,-1);
 
         }
 
@@ -93,6 +78,7 @@ public class Minesweeper extends AbstractMineSweeper {
         else {
             this.flag(x,y);
         }
+
     }
 
     @Override
@@ -114,37 +100,67 @@ public class Minesweeper extends AbstractMineSweeper {
     @Override
     public void open(int x, int y) {
         AbstractTile tempTile = getTile(x, y);
-        if (tempTile != null) { //If tile has explosive neighbours just open and nothing else
-            if (explosiveNeighbourCount(x,y) > 0) {
-                tempTile.open();
-                this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
-            }
-            else { //If tile has no explosive neighbours, open all tiles around it
-                tempTile.open();
-                this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
 
-                for(int i = -1; i <= 1; i++) {
-                    for(int j = -1; j <= 1; j++) {
-                        AbstractTile checkTile = getTile(x + i, y + j);
-                        if(checkTile != null && checkTile.isOpened() == false) {
-                            open(x + i, y + j);
+        if (tempTile != null && tempTile.isFlagged() == false) {
+            if (tempTile.isExplosive() && firstOpen) {
+                firstOpen = false;
+                tempTile.setExplosive(false);
+                newExplosive(x, y);
+                open(x, y);
+            }
+            else if (tempTile.isExplosive()) { //If tile is explosive, notify the view
+                firstOpen = false;
+
+                for (int tempX = 0; tempX < col; tempX++) {
+                    for (int tempY = 0; tempY < row; tempY++) {
+                        if (getTile(tempX, tempY).isExplosive()) {
+                            this.viewNotifier.notifyExploded(tempX, tempY);
+                        }
+                    }
+
+                }
+
+                this.viewNotifier.notifyGameLost();
+            }
+
+            else { //If tile has explosive neighbours just open and nothing else
+                firstOpen = false;
+
+                if (explosiveNeighbourCount(x,y) > 0) {
+                    tempTile.open();
+                    this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
+                }
+                else { //If tile has no explosive neighbours, open all tiles around it
+                    tempTile.open();
+                    this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
+
+                    for(int i = -1; i <= 1; i++) {
+                        for(int j = -1; j <= 1; j++) {
+                            AbstractTile checkTile = getTile(x + i, y + j);
+                            if(checkTile != null && checkTile.isOpened() == false) {
+                                open(x + i, y + j);
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (tempTile.isExplosive()) { //If tile is explosive, notify the view
-            for (int tempX = 0; tempX < col; tempX++) {
-                for (int tempY = 0; tempY < row; tempY++) {
-                    if (getTile(tempX, tempY).isExplosive()) {
-                        this.viewNotifier.notifyExploded(tempX, tempY);
-                    }
-                }
+    }
 
+    private void newExplosive(int notX, int notY) {
+        boolean bombSet = false;
+        Random random = new Random();
+
+        while (!bombSet) {
+            int randomRow = random.nextInt(row);
+            int randomCol = random.nextInt(col);
+
+            if (!this.getTile(randomCol, randomRow).isExplosive() && randomCol != notX && randomRow != notY) {
+                bombSet = true;
+                this.getTile(randomCol, randomRow).setExplosive(true);
+                break;
             }
-
-            this.viewNotifier.notifyGameLost();
         }
     }
 
@@ -165,7 +181,7 @@ public class Minesweeper extends AbstractMineSweeper {
     @Override
     public void flag(int x, int y) {
         AbstractTile tempTile = getTile(x, y);
-        if (tempTile != null) {
+        if (tempTile != null && tempTile.isOpened() == false) {
             getTile(x, y).flag();
 
             this.flagCount++;
