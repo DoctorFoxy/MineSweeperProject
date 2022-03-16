@@ -500,19 +500,7 @@ public class GameModelTester {
             //setInvoked();
             //assertTrue("This method shouldn't be invoked in this test", false);
         }
-        /*
-        @Override
-        public void notifyBombCountChanged(int newBombCount) {
-            setInvoked();
-            assertTrue("This method shouldn't be invoked in this test", false);
-        }
 
-        @Override
-        public void notifyBombCountChanged(int newBombCount) {
-            setInvoked();
-            assertTrue("This method shouldn't be invoked in this test", false);
-
-         */
         @Override
         public void notifyTimeElapsedChanged(Duration newTimeLeft) {
             //setInvoked();
