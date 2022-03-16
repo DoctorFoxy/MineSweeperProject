@@ -31,6 +31,8 @@ public class Minesweeper extends AbstractMineSweeper {
         flagCount = 0;
         firstOpen = true;
         firstTileRule = true;
+        elapsedTime = 0;
+
     }
 
     @Override
@@ -60,11 +62,19 @@ public class Minesweeper extends AbstractMineSweeper {
         this.col = col;
         this.explosionCount = explosionCount;
 
-        world = new Tile[row][col];
-
+        //Time stuff
         elapsedTime = 0;
-        Timer elapsed = new Timer();
-        elapsed.scheduleAtFixedRate(updateElapsedTime,0,1000);
+
+        try {
+            Timer elapsed = new Timer();
+            elapsed.scheduleAtFixedRate(updateElapsedTime,0,1000);
+        }
+        catch (Exception e) {
+
+        }
+
+        // Create new world
+        world = new Tile[row][col];
 
         for (int colIndex = 0 ; colIndex < col ; colIndex++) {
             for (int rowIndex = 0 ; rowIndex < row ; rowIndex++) {
@@ -161,9 +171,26 @@ public class Minesweeper extends AbstractMineSweeper {
                         }
                     }
                 }
+
+                checkWin();
             }
         }
 
+    }
+
+    private void checkWin() {
+        int unopened = col*row;
+        for (AbstractTile[] column : world) {
+            for (AbstractTile tile : column) {
+                if (tile.isOpened()) {
+                    unopened--;
+                }
+            }
+        }
+
+        if (unopened == explosionCount) {
+            this.viewNotifier.notifyGameWon();
+        }
     }
 
     private void newExplosive(int notX, int notY) {

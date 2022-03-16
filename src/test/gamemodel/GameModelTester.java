@@ -476,6 +476,7 @@ public class GameModelTester {
 
     private class MockGameStateNotifier implements IGameStateNotifier{
         private int invoked = 0;
+
         @Override
         public void notifyNewGame(int row, int col) {
             setInvoked();
@@ -498,6 +499,12 @@ public class GameModelTester {
         public void notifyFlagCountChanged(int newFlagCount) {
             setInvoked();
             assertTrue("This method shouldn't be invoked in this test", false);       
+        }
+
+        @Override
+        public void notifyBombCountChanged(int newBombCount) {
+            setInvoked();
+            assertTrue("This method shouldn't be invoked in this test", false);
         }
 
         @Override
