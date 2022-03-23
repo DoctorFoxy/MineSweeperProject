@@ -61,6 +61,7 @@ public class Minesweeper extends AbstractMineSweeper {
 
         //Time stuff
         elapsedTime = 0;
+        stopTimer = false;
 
         try {
             Timer elapsed = new Timer();
