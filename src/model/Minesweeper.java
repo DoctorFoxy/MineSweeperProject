@@ -66,7 +66,7 @@ public class Minesweeper extends AbstractMineSweeper {
             Timer elapsed = new Timer();
             elapsed.scheduleAtFixedRate(updateElapsedTime,0,1000);
         }
-        catch (Exception e) {
+        catch (Exception ignored) {
 
         }
 
@@ -244,7 +244,7 @@ public class Minesweeper extends AbstractMineSweeper {
     @Override
     public void flag(int x, int y) {
         AbstractTile tempTile = getTile(x, y);
-        if (tempTile != null && tempTile.isOpened() == false) {
+        if (tempTile != null && !tempTile.isOpened()) {
             getTile(x, y).flag();
 
             this.flagCount++;
