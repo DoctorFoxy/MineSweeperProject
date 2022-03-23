@@ -17,7 +17,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-
 import notifier.IGameStateNotifier;
 
 public class MinesweeperView implements IGameStateNotifier {

@@ -135,49 +135,51 @@ public class Minesweeper extends AbstractMineSweeper {
     public void open(int x, int y) {
         AbstractTile toOpen = getTile(x, y);
         if (toOpen != null) {
-            if (toOpen.isExplosive()) {  // EXPLOSIVE
-                if (firstOpen && firstTileRule) { // FIRST OPEN NEVER BOMB
-                    firstOpen = false;
-                    makeEmpty(x,y);
-                    newExplosive(x,y);
-                    open(x,y);
-                }
+            if (!toOpen.isFlagged()) {
+                if (toOpen.isExplosive()) {  // EXPLOSIVE
+                    if (firstOpen && firstTileRule) { // FIRST OPEN NEVER BOMB
+                        firstOpen = false;
+                        makeEmpty(x,y);
+                        newExplosive(x,y);
+                        open(x,y);
+                    }
+                    else {
+                        firstOpen = false;
+                        for (int tempX = 0; tempX < col; tempX++) {
+                            for (int tempY = 0; tempY < row; tempY++) {
+                                if (getTile(tempX, tempY).isExplosive()) {
+                                    this.viewNotifier.notifyExploded(tempX, tempY);
+                                }
+                            }
+
+                        }
+                        stopTimer = true;
+                        this.viewNotifier.notifyGameLost();
+                    }
+                } // NON EXPLOSIVE
                 else {
                     firstOpen = false;
-                    for (int tempX = 0; tempX < col; tempX++) {
-                        for (int tempY = 0; tempY < row; tempY++) {
-                            if (getTile(tempX, tempY).isExplosive()) {
-                                this.viewNotifier.notifyExploded(tempX, tempY);
-                            }
-                        }
 
+                    if (explosiveNeighbourCount(x,y) > 0) {
+                        toOpen.open();
+                        this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
                     }
-                    stopTimer = true;
-                    this.viewNotifier.notifyGameLost();
-                }
-            } // NON EXPLOSIVE
-            else {
-                firstOpen = false;
+                    else { //If tile has no explosive neighbours, open all tiles around it
+                        toOpen.open();
+                        this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
 
-                if (explosiveNeighbourCount(x,y) > 0) {
-                    toOpen.open();
-                    this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
-                }
-                else { //If tile has no explosive neighbours, open all tiles around it
-                    toOpen.open();
-                    this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
-
-                    for(int i = -1; i <= 1; i++) {
-                        for(int j = -1; j <= 1; j++) {
-                            AbstractTile checkTile = getTile(x + i, y + j);
-                            if(checkTile != null && !checkTile.isOpened()) {
-                                open(x + i, y + j);
+                        for(int i = -1; i <= 1; i++) {
+                            for(int j = -1; j <= 1; j++) {
+                                AbstractTile checkTile = getTile(x + i, y + j);
+                                if(checkTile != null && !checkTile.isOpened()) {
+                                    open(x + i, y + j);
+                                }
                             }
                         }
                     }
-                }
 
-                checkWin();
+                    checkWin();
+                }
             }
         }
 
