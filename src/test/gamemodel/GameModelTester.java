@@ -41,7 +41,7 @@ public class GameModelTester {
                 super.setInvoked();
             }
         });
-        tile.open();
+        tile.open(null);
     }
 
     @Test 
@@ -56,7 +56,7 @@ public class GameModelTester {
                 super.setInvoked();
             }
         });
-        tile.open();
+        tile.open(null);
     }
 
 

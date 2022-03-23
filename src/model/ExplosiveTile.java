@@ -1,5 +1,7 @@
 package model;
 
+import notifier.IGameStateNotifier;
+
 public class ExplosiveTile extends Tile {
 
     public ExplosiveTile() {
@@ -7,9 +9,9 @@ public class ExplosiveTile extends Tile {
     }
 
     @Override
-    public boolean open() {
-        return super.open();
-
+    public boolean open(IGameStateNotifier notifier) {
+        notifier.notifyGameLost();
+        return super.open(notifier);
     }
 
     @Override

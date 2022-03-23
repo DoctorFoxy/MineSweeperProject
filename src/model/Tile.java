@@ -1,5 +1,7 @@
 package model;
 
+import notifier.IGameStateNotifier;
+
 public class Tile extends AbstractTile {
     private boolean opened;
     private boolean flagged;
@@ -10,7 +12,7 @@ public class Tile extends AbstractTile {
     }
 
     @Override
-    public boolean open() {
+    public boolean open(IGameStateNotifier notifier) {
         if (!this.isOpened() && !this.isFlagged()) {
             opened = true;
             return true;

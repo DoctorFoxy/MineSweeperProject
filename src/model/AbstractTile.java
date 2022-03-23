@@ -1,11 +1,12 @@
 package model;
 
+import notifier.IGameStateNotifier;
 import notifier.ITileStateNotifier;
 import test.TestableTile;
 
 public abstract class AbstractTile implements TestableTile {
     protected ITileStateNotifier viewNotifier;
-    public abstract boolean open();
+    public abstract boolean open(IGameStateNotifier notifier);
     public abstract void flag();
     public abstract void unflag();
     public abstract boolean isFlagged();

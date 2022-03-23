@@ -1,9 +1,10 @@
 package test;
 
+import notifier.IGameStateNotifier;
 import notifier.ITileStateNotifier;
 
 public interface TestableTile {
-    boolean open();
+    boolean open(IGameStateNotifier notifier);
     void flag();
     void unflag();
     boolean isFlagged();

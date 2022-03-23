@@ -76,7 +76,7 @@ public class Minesweeper extends AbstractMineSweeper {
 
         for (int colIndex = 0 ; colIndex < col ; colIndex++) {
             for (int rowIndex = 0 ; rowIndex < row ; rowIndex++) {
-                world[rowIndex][colIndex] = new EmptyTile();
+                world[rowIndex][colIndex] = new Tile();
             }
         }
 
@@ -151,19 +151,20 @@ public class Minesweeper extends AbstractMineSweeper {
                             }
 
                         }
+                        
+                        toOpen.open(this.viewNotifier);
                         stopTimer = true;
-                        this.viewNotifier.notifyGameLost();
                     }
                 } // NON EXPLOSIVE
                 else {
                     firstOpen = false;
 
                     if (explosiveNeighbourCount(x,y) > 0) {
-                        toOpen.open();
+                        toOpen.open(this.viewNotifier);
                         this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
                     }
                     else { //If tile has no explosive neighbours, open all tiles around it
-                        toOpen.open();
+                        toOpen.open(this.viewNotifier);
                         this.viewNotifier.notifyOpened(x,y, explosiveNeighbourCount(x, y));
 
                         for(int i = -1; i <= 1; i++) {
@@ -224,7 +225,7 @@ public class Minesweeper extends AbstractMineSweeper {
 
     public void makeEmpty(int x, int y) {
         if (x < col && x >= 0 && y < row && y >= 0) {
-            world[y][x] = new EmptyTile();
+            world[y][x] = new Tile();
         }
     }
 
@@ -274,7 +275,7 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public AbstractTile generateEmptyTile() {
-        return new EmptyTile();
+        return new Tile();
     }
 
     @Override
