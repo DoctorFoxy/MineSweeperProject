@@ -9,6 +9,7 @@ public class ExplosiveTile extends Tile {
     @Override
     public boolean open() {
         return super.open();
+
     }
 
     @Override

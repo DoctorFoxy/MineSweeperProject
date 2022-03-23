@@ -1,16 +1,8 @@
 package model;
 
-import notifier.IGameStateNotifier;
-import view.MinesweeperView;
-import view.TileView;
-
-import java.sql.Time;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Random;
-import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,11 +10,11 @@ public class Minesweeper extends AbstractMineSweeper {
     private int row;
     private int col;
     private int explosionCount;
-    private AbstractTile[][] world;
     private int flagCount;
-    private TileView tileView;
-    private boolean firstTileRule;
 
+    private AbstractTile[][] world;
+
+    private boolean firstTileRule;
     private boolean firstOpen;
 
     private int elapsedTime;
@@ -39,12 +31,12 @@ public class Minesweeper extends AbstractMineSweeper {
 
     @Override
     public int getWidth() {
-        return col;
+        return this.col;
     }
 
     @Override
     public int getHeight() {
-        return row;
+        return this.row;
     }
 
     @Override
@@ -63,6 +55,7 @@ public class Minesweeper extends AbstractMineSweeper {
         this.row = row;
         this.col = col;
         this.explosionCount = explosionCount;
+        this.flagCount = 0;
         this.viewNotifier.notifyBombCountChanged(explosionCount);
 
         //Time stuff
@@ -200,7 +193,7 @@ public class Minesweeper extends AbstractMineSweeper {
 
         if (unopened == explosionCount) {
             this.viewNotifier.notifyGameWon();
-            stopTimer = true;
+            this.stopTimer = true;
             return true;
         }
         return false;
