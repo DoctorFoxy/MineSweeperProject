@@ -63,6 +63,7 @@ public class Minesweeper extends AbstractMineSweeper {
         this.row = row;
         this.col = col;
         this.explosionCount = explosionCount;
+        this.viewNotifier.notifyBombCountChanged(explosionCount);
 
         //Time stuff
         elapsedTime = 0;
@@ -110,7 +111,9 @@ public class Minesweeper extends AbstractMineSweeper {
             this.unflag(x,y);
         }
         else {
-            this.flag(x,y);
+            if (flagCount != explosionCount) {
+                this.flag(x,y);
+            }
         }
 
     }
@@ -254,6 +257,7 @@ public class Minesweeper extends AbstractMineSweeper {
             this.viewNotifier.notifyFlagged(x,y);
         }
         this.viewNotifier.notifyFlagCountChanged(flagCount);
+        this.viewNotifier.notifyBombCountChanged(explosionCount - flagCount);
     }
 
     @Override
