@@ -55,8 +55,9 @@ public class Minesweeper extends AbstractMineSweeper {
         this.row = row;
         this.col = col;
         this.explosionCount = explosionCount;
-        this.flagCount = 0;
         this.viewNotifier.notifyBombCountChanged(explosionCount);
+        this.flagCount = 0;
+        this.viewNotifier.notifyFlagCountChanged(flagCount);
 
         //Time stuff
         elapsedTime = 0;
